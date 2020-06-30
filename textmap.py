@@ -233,6 +233,10 @@ class textBox:
         self._startY = self._cursorY  # the top row start position
 
         self.addText(text)
+        
+        #Calculate what a space width between words should be:
+        global fontWidth
+        fontWidth = font.get_glyph(ord("-")).width
 
         import gc
 
@@ -241,10 +245,12 @@ class textBox:
     def addText(self, newText):  # add text to a textBox
         # print('startX: {}'.format(self._cursorX) )
         import gc
+        #! Original split by char. We're going to split by word.
+        split_words = newText.split()
 
-        for char in newText:
-            (charWidth, charHeight) = bounding_box(char, self._font, self._lineSpacing)
-            if (self._cursorX + charWidth >= self._width - 1) or (char == "\n"):
+        for split in split_words:
+            (wordWidth, wordHeight) = bounding_box(split, self._font, self._lineSpacing)
+            if (self._cursorX + wordWidth >= self._width - 1) or (split == "\n"):
                 # make a newline
                 self.setCursor(
                     self._startX,
@@ -253,14 +259,14 @@ class textBox:
 
             (newX, newY) = placeText(
                 self.bitmap,
-                char,
+                split,
                 self._font,
                 self._lineSpacing,
                 self._cursorX,
                 self._cursorY,
             )
             # print('newX: {}'.format(newX) )
-            self.setCursor(newX, newY)
+            self.setCursor(newX + fontWidth, newY) #Add a space between words
             if self._memorySaver == False:
                 self._text = self._text + newText # add this text to the instance text string.
         gc.collect()
